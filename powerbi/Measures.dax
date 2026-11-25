@@ -1,0 +1,46 @@
+-- Create a measure table (Home > Enter data) named _Measures, then add these.
+
+Average Modal Price = AVERAGE(Prices[Modal_Price])
+
+Average Minimum Price = AVERAGE(Prices[Min_Price])
+
+Average Maximum Price = AVERAGE(Prices[Max_Price])
+
+Price Spread % =
+AVERAGEX(
+    FILTER(Prices, Prices[Modal_Price] > 0 && Prices[Max_Price] >= Prices[Min_Price]),
+    DIVIDE(Prices[Max_Price] - Prices[Min_Price], Prices[Modal_Price])
+)
+
+Observation Count = COUNTROWS(Prices)
+
+High Price Days =
+CALCULATE(
+    DISTINCTCOUNT(Prices[Arrival_Date]),
+    Prices[Commodity] = "Tomato",
+    Prices[Modal_Price] >= 3000
+)
+
+High Price Observations =
+CALCULATE(
+    COUNTROWS(Prices),
+    Prices[Commodity] = "Tomato",
+    Prices[Modal_Price] >= 3000
+)
+
+FAQ Average Price =
+CALCULATE([Average Modal Price], Prices[Grade] = "FAQ")
+
+Medium Average Price =
+CALCULATE([Average Modal Price], Prices[Grade] = "Medium")
+
+FAQ Premium = [FAQ Average Price] - [Medium Average Price]
+
+Prior Year Average Price =
+CALCULATE(
+    [Average Modal Price],
+    DATEADD('Calendar'[Date], -1, YEAR)
+)
+
+Year-over-Year Change % =
+DIVIDE([Average Modal Price] - [Prior Year Average Price], [Prior Year Average Price])
