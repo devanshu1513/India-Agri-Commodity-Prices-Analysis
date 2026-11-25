@@ -1,32 +1,70 @@
 # India Agricultural Commodity Price Analysis
 
-Python and Jupyter analysis of historical wholesale agricultural prices in India. This package now includes the original notebooks, MySQL analysis queries, and materials for building the interactive Power BI report described in the resume.
+An end-to-end analysis of historical wholesale agricultural prices reported by markets across India. The project combines Python and Jupyter data work, MySQL queries, and an interactive dashboard preview to explore price trends, seasonal movement, regional differences, market volatility, and grade premiums.
+
+## Project overview
+
+The analysis uses yearly market price CSV files from 2001 through 2025. The streaming summary scanned **75,390,478 rows across 25 CSV files**. The partial 2026 file was excluded so comparisons use the same complete year range. Prices are reported in rupees per quintal.
+
+Questions explored include:
+
+- How have prices for major commodities changed over time?
+- Which months and commodity groups show stronger year-over-year movement?
+- How do prices vary between states, districts, and markets?
+- Where are observed price spreads and FAQ-versus-Medium grade premiums largest?
+- How do row counts differ from distinct observed market dates for high-price events?
+
+See [analysis_results.md](analysis_results.md) for the data-backed findings, methodology notes, and differences from older saved notebook outputs.
 
 ## What is included
 
-- `data_cleaning.ipynb`, `analysis.ipynb`, `data_visualization.ipynb`: original notebooks with saved outputs.
-- `scripts/clean_data.py`: chunked CSV cleaning script with input/output folder options.
-- `scripts/analyze_dataset.py`: bounded-memory analysis of yearly CSV files.
-- `analysis_results.md`: results calculated from the supplied local dataset.
-- `sql/schema.sql`, `sql/analysis_queries.sql`: MySQL 8 table setup and queries for long-term trends, monthly changes, regional spreads, grade premiums, and high-price markets.
-- `powerbi/`: Power Query import template, DAX measures, and report layout guide.
-- `dashboard/index.html`: interactive preview populated from the supplied dataset; `dashboard/data.json` holds its compact result data.
-- `dashboard/screenshots/`: PNG captures of the price trends, market comparison, and volatility & quality dashboard views.
+- **Jupyter notebooks** — `data_cleaning.ipynb`, `analysis.ipynb`, and `data_visualization.ipynb` document cleaning, analysis, and visual exploration.
+- **Python scripts** — chunked CSV cleaning and bounded-memory dataset summarization.
+- **SQL** — a MySQL 8 schema and queries for commodity trends, seasonal changes, market comparisons, price spreads, and grade premiums.
+- **Dashboard** — `dashboard/index.html` is an interactive snapshot, with compact chart data in `dashboard/data.json` and screenshots in `dashboard/screenshots/`.
+- **Power BI materials** — Power Query mapping, DAX measures, and a report build guide are in `powerbi/`. A `.pbix` file is not included; Power BI Desktop is required to build and save that report.
 
-## Get the data
+## Data and reproducibility
 
-The large source data stays outside this project package. The supplied folder is `Desktop/Projects/dataset/`, with yearly files in `csv/` and `parquet/`. The analysis used 25 CSVs covering 2001–2025 (75,390,478 rows); the partial 2026 CSV was excluded. To rerun the scan:
+The source dataset is not included in this repository because it is large. Place the yearly CSV files in a folder such as `dataset/csv/`, or pass your own folder path to the scripts. The scripts select files named by year and the analysis script uses years 2001–2025.
+
+Install the Python dependency used by the scripts:
 
 ```bash
-python scripts/analyze_dataset.py --input-dir "/path/to/Projects/dataset/csv" --output analysis_summary.json
+python -m pip install pandas
 ```
 
-If you need cleaned CSVs for SQL or Power BI, run `python scripts/clean_data.py --input-dir "/path/to/Projects/dataset/csv" --output-dir "/path/to/cleaned-csv"`. See `powerbi/DASHBOARD_BUILD.md` for data loading and the report pages.
+Summarize the source data:
 
-## SQL setup
+```bash
+python scripts/analyze_dataset.py \
+  --input-dir "/path/to/dataset/csv" \
+  --output analysis_summary.json
+```
 
-Run `sql/schema.sql` in MySQL 8, load each cleaned CSV into `commodity_prices` using its commented `LOAD DATA` template, and run sections from `sql/analysis_queries.sql`.
+Clean yearly CSV files for downstream use:
 
-## Evidence and limits
+```bash
+python scripts/clean_data.py \
+  --input-dir "/path/to/dataset/csv" \
+  --output-dir "/path/to/cleaned-csv"
+```
 
-The notebooks demonstrate Python-based cleaning, exploratory analysis, and saved Matplotlib/Seaborn charts. SQL analysis queries and Power BI setup assets are included. A `.pbix` file is not included: this environment is macOS, while Power BI Desktop requires Windows. The HTML dashboard is an interactive snapshot based on the supplied full dataset; `dashboard/data.json` contains its compact source data. Rerunning `scripts/analyze_dataset.py` creates a fresh aggregate JSON for updating the dashboard. See `analysis_results.md` for methodology, sample-size notes, and differences between current data results and saved notebook outputs.
+The scripts process files in chunks to limit memory use. The dashboard JSON is a saved aggregate snapshot; rerunning the analysis script creates a new summary file and does not automatically rebuild the dashboard data.
+
+## SQL and Power BI
+
+For MySQL, create the table with `sql/schema.sql`, load cleaned CSV data using the template notes in that file, and run selected analyses from `sql/analysis_queries.sql`.
+
+For Power BI Desktop on Windows, follow `powerbi/DASHBOARD_BUILD.md` to load Parquet or cleaned CSV data, configure the model, and assemble the report pages. The guide covers price trends, market comparisons, volatility, and grade premiums.
+
+## Data notes
+
+- Category assignment is based on keyword rules and may need review for unusual commodity names.
+- A qualifying high-price row is not always a distinct market date; the results report both measures where relevant.
+- Some extreme regional comparisons come from small samples. Consult the observation counts in `analysis_results.md` before interpreting them.
+- Notebook outputs are saved snapshots and may use older counts or assumptions; the results report describes the current dataset-backed calculations.
+
+## Author
+
+**Devanshu Kumar** — [@devanshu1513](https://github.com/devanshu1513)
